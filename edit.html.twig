@@ -1,0 +1,176 @@
+{% extends '@bolt/_base/layout.html.twig' %}
+{% import '@bolt/_macro/_macro.html.twig' as macro %}
+
+{# The 'title' and 'shoulder' blocks are the main heading of the page. #}
+{% block shoulder %}
+    {{ 'caption.edit_image'|trans }}
+{% endblock shoulder %}
+
+{% block title %}
+    {{ macro.icon('image') }}
+    {{ excerpt(media.title|default(media.filename), 30) }}
+{% endblock %}
+
+{% block vue_id 'editor' %}
+
+{% block main %}
+
+    <div class="imageholder">
+        {% set thumbnail = thumbnail(image = media.filename, width = 900, height = 500, location = media.location, path = media.path) %}
+        <img id="main_image" src="{{ thumbnail }}">
+    </div>
+
+    <br>
+
+
+<form method="post" id="editcontent">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token('media_edit') }}">
+
+    {% include '@bolt/_partials/fields/text.html.twig' with {
+        'label': 'caption.filename'|trans,
+        'name': 'filename',
+        'value': media.location ~ '://' ~ (media.path ? media.path ~ '/') ~ media.filename,
+        'disabled' : true,
+        'attributes': 'readonly'
+    }  %}
+
+
+    {% include '@bolt/_partials/fields/text.html.twig' with {
+        'label': 'field.title'|trans,
+        'name': 'title',
+        'value': media.title
+    }  %}
+
+    {% include '@bolt/_partials/fields/textarea.html.twig' with {
+        'label': 'field.description'|trans,
+        'name': 'description',
+        'value': media.description
+    }  %}
+
+    {% include '@bolt/_partials/fields/text.html.twig' with {
+        'label': 'field.copyright'|trans,
+        'name': 'copyright',
+        'value': media.copyright,
+        'postfix': "If the image is copyrighted or licensed, mention the rightsholder here."
+    }  %}
+
+    {% include '@bolt/_partials/fields/text.html.twig' with {
+        'label': 'field.originalFilename'|trans,
+        'name': 'originalFilename',
+        'value': media.originalFilename
+    }  %}
+
+    <div class="media my-4">
+        {% set crop = 'crop-' ~ media.cropX|default(50) ~ '-' ~ media.cropy|default(50) ~ '-' ~ media.cropZoom|default(1.3)  %}
+        {% set thumbnail = thumbnail(image = media.filename, width = 300, height = 300, location = media.location, path = media.path, fit = crop) %}
+        <img class="me-3" src="{{ thumbnail }}" alt="Cropping example">
+
+        <div>
+        {% include '@bolt/_partials/fields/text.html.twig' with {
+            'label': 'field.cropX'|trans,
+            'name': 'cropX',
+            'value': media.cropX|default(50),
+            'postfix': 'field.cropXPostfix'|trans
+        }  %}
+
+        {% include '@bolt/_partials/fields/text.html.twig' with {
+            'label': 'field.cropY'|trans,
+            'name': 'cropY',
+            'value': media.cropY|default(50),
+            'postfix': 'field.cropYPostfix'|trans
+        }  %}
+
+        {% include '@bolt/_partials/fields/text.html.twig' with {
+            'label': 'field.cropZoom'|trans,
+            'name': 'cropZoom',
+            'value': media.cropZoom|default(1.3),
+            'postfix': 'field.cropZoomPostfix'|trans
+        }  %}
+        </div>
+
+
+    </div>
+
+
+    {{ macro.button('action.save', 'fa-save', 'success', {'type': 'submit', 'form': 'editcontent', 'name': 'save'}) }}
+
+</form>
+
+
+{% endblock %}
+
+{% block aside %}
+
+<div class="card">
+    <div class="card-header">{{ 'caption.meta_information'|trans }}</div>
+    <div class="card-body">
+
+        <form>
+            <div class="form-group">
+                <button type="submit" class="btn btn-success mb-3" form="editcontent">
+                    <i class="fas fa-save me-2"></i> {{ 'action.save'|trans }}
+                </button>
+
+                <p>{{ 'label.predominant_colors__in_image'|trans }}:
+                    <span id="swatcheslist">
+                    </span>
+                </p>
+            </div>
+
+            {% include '@bolt/_partials/fields/text.html.twig' with {
+                'label': 'field.id'|trans,
+                'name': 'id',
+                'value': media.id,
+                'valueonly' : true,
+            }  %}
+
+            {% include '@bolt/_partials/fields/text.html.twig' with {
+                'label': 'field.width'|trans,
+                'name': 'width',
+                'value': media.width ~ ' pixels',
+                'valueonly' : true,
+            }  %}
+
+            {% include '@bolt/_partials/fields/text.html.twig' with {
+                'label': 'field.height'|trans,
+                'name': 'height',
+                'value': media.height ~ ' pixels',
+                'valueonly' : true,
+            }  %}
+
+            {% include '@bolt/_partials/fields/text.html.twig' with {
+                'label': 'field.filesize'|trans,
+                'name': 'filesize',
+                'value': media.filesize ~ ' bytes',
+                'valueonly' : true,
+            }  %}
+
+            {#<input type="text" name="author" value="{{ media.author }}">#}
+
+    {% include '@bolt/_partials/fields/date.html.twig' with {
+        'label': 'field.createdAt'|trans,
+        'name': 'createdAt',
+        'value': media.createdAt,
+        'valueonly' : true,
+
+    } %}
+
+    {% include '@bolt/_partials/fields/date.html.twig' with {
+        'label': 'field.modifiedAt'|trans,
+        'name': 'modifiedAt',
+        'value': media.modifiedAt,
+        'valueonly' : true,
+    } %}
+
+        </form>
+
+    </div>
+</div>
+
+
+{% endblock aside %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('vibrant') }}
+{% endblock javascripts %}
